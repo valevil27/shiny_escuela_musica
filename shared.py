@@ -1,5 +1,6 @@
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
+
 import pandas as pd
 
 app_dir = Path(__file__).parent
@@ -13,8 +14,17 @@ filter_options = [
     "Instrumento",
 ]
 
-courses_df = df.Año_Curso.unique().tolist()
-trim_df = [1,2,3]
+map_filter_cols = {
+    "General": None,
+    "Curso": "Año_Curso",
+    "Asignatura": "Asignatura",
+    "Profesor": "Instrumento",
+    "Instrumento": "Profesor",
+}
+
+courses_df = df.Año_Curso.sort_values(ascending=False).unique().tolist()
+
+trim_df = [1, 2, 3]
 
 
 def last_entry_ds(today: date) -> tuple[str, int]:
@@ -31,6 +41,14 @@ def last_entry_ds(today: date) -> tuple[str, int]:
             return 1, f"{year}-{year + 1}"
         case _:
             raise ValueError("Not a valid month")
+
+
+def select_choices(filter: str) -> list[str]:
+    if filter not in map_filter_cols.keys():
+        raise ValueError("Not a filter")
+    if filter == "General":
+        return list()
+    return df[filter].unique().tolist()
 
 
 if __name__ == "__main__":
