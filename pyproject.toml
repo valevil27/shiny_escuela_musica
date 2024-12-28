@@ -8,6 +8,7 @@ dependencies = [
     "faker>=33.1.0",
     "matplotlib>=3.9.3",
     "numpy>=2.2.0",
+    "plotly>=5.24.1",
     "seaborn>=0.13.2",
     "shiny>=1.2.1",
     "shinywidgets>=0.4.2",
