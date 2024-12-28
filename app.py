@@ -2,10 +2,11 @@ from datetime import date
 import seaborn as sns
 
 # Import data from shared.py
-from shared import df, filter_options, last_entry_ds, select_choices, courses_df
+from shared import data, filter_options, last_entry_ds, select_choices, courses_df
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 import locale
+import plotly.express as px
 
 # Idioma local castellano para trabajar con strftime y fechas, _ para no renderizar
 _ = locale.setlocale(locale.LC_TIME, "")
@@ -34,7 +35,9 @@ def render_title():
 # Filtros del Dashboard
 with ui.sidebar():
     ui.h4("Filtros")
-    ui.input_select("course_start", "Curso de Inicio",choices=courses_df, selected=actual_course)
+    @render.ui
+    def select_course_start():
+        return ui.input_select("course_start", "Curso de Inicio",choices=courses_df(), selected=actual_course)
     ui.input_select("trim_start", "Trimestre de Inicio",choices=[1,2,3], selected=actual_trim)
     ui.input_select(
         "filter", "Aspecto a Comparar", choices=filter_options, selected="General"
@@ -45,7 +48,7 @@ with ui.sidebar():
         return ui.input_select(
             "objective",
             "Base de la Comparativa",
-            choices=select_choices(input.filter()),
+            choices=select_choices(data(), input.filter()),
         )
 
     @render.ui 
@@ -58,6 +61,11 @@ with ui.sidebar():
 with ui.layout_columns():
     with ui.card():
         ui.card_header("Tasa de aprobados")
+        @render_plotly
+        def aproved_plotly():
+            df = data()
+            df = df.groupby("Periodo")['Aprobado'].mean().reset_index()
+            return px.bar(df, x="Periodo", y="Aprobado")
 
     with ui.card():
         ui.card_header("Horas de práctica semanales")
