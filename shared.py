@@ -51,5 +51,21 @@ def select_choices(filter: str) -> list[str]:
     return df[filter].unique().tolist()
 
 
+def course_to_date(trim: int, course: str) -> date:
+    match trim:
+        case 1:
+            month = 1
+            year = int(course.split("-")[0])
+        case 2:
+            month = 2
+            year = int(course.split("-")[0])
+        case 3:
+            month = 3
+            year = int(course.split("-")[1])
+        case _:
+            raise ValueError("Unexpected trimester")
+    return date(year, month, 1)
+
+
 if __name__ == "__main__":
     print(last_entry_ds(date.today()))

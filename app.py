@@ -75,7 +75,7 @@ with ui.layout_columns():
     with ui.card():
         ui.card_header("Abandonan la escuela")
 
-with ui.layout_columns():
+with ui.layout_columns(col_widths=[8,4]):
     with ui.card():
         ui.card_header("Comparativa")
 
