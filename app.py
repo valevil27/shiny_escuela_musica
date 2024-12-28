@@ -4,6 +4,7 @@ import seaborn as sns
 # Import data from shared.py
 from shared import df, filter_options, last_entry_ds, select_choices, courses_df
 from shiny.express import input, render, ui
+from shinywidgets import render_plotly
 import locale
 
 # Idioma local castellano para trabajar con strftime y fechas, _ para no renderizar
@@ -14,7 +15,7 @@ actual_trim, actual_course = last_entry_ds(date.today())
 # Barra de título
 @render.express
 def render_title():
-    with ui.layout_columns(class_="mt-3", col_widths=[8,4]):
+    with ui.layout_columns(class_="mt-1 mb-0", col_widths=[8,4]):
         ui.h2(f"Escuela de Música - {input.filter()}")
         ui.div(
             ui.p(
@@ -51,7 +52,6 @@ with ui.sidebar():
     def error_msg():
         if input.course_start() == actual_course and actual_trim < int(input.trim_start()):
             return ui.p("El trimestre de inicio debe ser anterior o igual al actual.", class_ = "text-red")
-        ui.tags.p
 
 
 # Fila de bars
