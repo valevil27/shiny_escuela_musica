@@ -9,6 +9,7 @@ app_dir = Path(__file__).parent
 def data() -> pd.DataFrame:
     df = pd.read_csv(app_dir / "dataset.csv")
     df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
+    df["Año_Curso"] = pd.Categorical(df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True)
     return df
 
 filter_options = [
