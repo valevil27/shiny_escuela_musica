@@ -2,9 +2,14 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
+from shiny import reactive
 
 app_dir = Path(__file__).parent
-df = pd.read_csv(app_dir / "dataset.csv")
+@reactive.calc
+def data() -> pd.DataFrame:
+    df = pd.read_csv(app_dir / "dataset.csv")
+    df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
+    return df
 
 filter_options = [
     "General",
@@ -22,7 +27,9 @@ map_filter_cols = {
     "Instrumento": "Profesor",
 }
 
-courses_df = df.Año_Curso.sort_values(ascending=False).unique().tolist()
+@reactive.calc
+def courses_df():
+    return data().Año_Curso.sort_values(ascending=False).unique().tolist()
 
 trim_df = [1, 2, 3]
 
@@ -43,12 +50,12 @@ def last_entry_ds(today: date) -> tuple[str, int]:
             raise ValueError("Not a valid month")
 
 
-def select_choices(filter: str) -> list[str]:
+def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
     if filter not in map_filter_cols.keys():
         raise ValueError("Not a filter")
     if filter == "General":
         return list()
-    return df[filter].unique().tolist()
+    return df()[filter].unique().tolist()
 
 
 def course_to_date(trim: int, course: str) -> date:
@@ -65,6 +72,9 @@ def course_to_date(trim: int, course: str) -> date:
         case _:
             raise ValueError("Unexpected trimester")
     return date(year, month, 1)
+
+def period(trim: int, course: str) -> str:
+    return f"T{trim} {course}"
 
 
 if __name__ == "__main__":
