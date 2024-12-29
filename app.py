@@ -4,7 +4,6 @@ from datetime import date
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 
-# Import data from shared.py
 from plot_utils import avance_fig, mean_fig, satisfaccion_fig
 from shared import courses_df, data, filter_options, last_entry_ds, select_choices
 
@@ -141,21 +140,6 @@ with ui.layout_columns(height=300):
             return fig
 
     with ui.card(full_screen=True):
-        ui.card_header("Avanzan a estudios profesionales")
-
-        @render_plotly
-        def avance_estudios_plotly():
-            df = data()
-            df = df[df["Curso"] == "Cuarto"]
-            objective = 0.8
-            fig = avance_fig(
-                df,
-                objective,
-                normalize=input.normalize(),
-            )
-            return fig
-
-    with ui.card(full_screen=True):
         ui.card_header("Abandonan la escuela")
 
         @render_plotly
@@ -166,6 +150,21 @@ with ui.layout_columns(height=300):
                 objective,
                 "Abandono_Educacion",
                 "Proporción de Alumnos Totales",
+                normalize=input.normalize(),
+            )
+            return fig
+
+    with ui.card(full_screen=True):
+        ui.card_header("Avanzan a estudios profesionales")
+
+        @render_plotly
+        def avance_estudios_plotly():
+            df = data()
+            df = df[df["Curso"] == "Cuarto"]
+            objective = 0.8
+            fig = avance_fig(
+                df,
+                objective,
                 normalize=input.normalize(),
             )
             return fig
