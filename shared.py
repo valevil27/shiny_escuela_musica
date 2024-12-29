@@ -52,11 +52,13 @@ def last_entry_ds(today: date) -> tuple[str, int]:
 
 
 def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
+    base_lst = ["General"]
     if filter not in map_filter_cols.keys():
         raise ValueError("Not a filter")
     if filter == "General":
-        return list()
-    return df()[filter].unique().tolist()
+        return base_lst
+    base_lst.extend(df[filter].unique().tolist())
+    return base_lst
 
 
 def course_to_date(trim: int, course: str) -> date:
