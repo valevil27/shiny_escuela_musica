@@ -1,12 +1,12 @@
+import locale
 from datetime import date
-import numpy as np
 
-# Import data from shared.py
-from plot_utils import mean_fig, pie_fig
-from shared import data, filter_options, last_entry_ds, select_choices, courses_df
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
-import locale
+
+# Import data from shared.py
+from plot_utils import avance_fig, mean_fig, satisfaccion_fig
+from shared import courses_df, data, filter_options, last_entry_ds, select_choices
 
 # Idioma local castellano para trabajar con strftime y fechas, _ para no renderizar
 _ = locale.setlocale(locale.LC_TIME, "")
@@ -85,7 +85,7 @@ with ui.layout_columns(height=300):
                 data(),
                 objective,
                 "Aprobado",
-                "Porcentaje de Aprobado",
+                "Promedio de Aprobado",
                 normalize=input.normalize(),
             )
             return fig
@@ -115,7 +115,7 @@ with ui.layout_columns(height=300):
                 data(),
                 objective,
                 "Promedio_Asistencia",
-                "Porcentaje de Asistencia",
+                "Promedio de Asistencia",
                 normalize=input.normalize(),
             )
             return fig
@@ -135,24 +135,22 @@ with ui.layout_columns(height=300):
                 df,
                 objective,
                 "Banda",
-                "Acceden a Banda de Música",
+                "Proporción que Accede a Banda",
                 normalize=input.normalize(),
             )
             return fig
 
     with ui.card(full_screen=True):
-        ui.card_header("Avanzan a estudios superiores")
+        ui.card_header("Avanzan a estudios profesionales")
 
         @render_plotly
         def avance_estudios_plotly():
             df = data()
             df = df[df["Curso"] == "Cuarto"]
             objective = 0.8
-            fig = mean_fig(
+            fig = avance_fig(
                 df,
                 objective,
-                "Promedio_Asistencia",
-                "Porcentaje de Asistencia",
                 normalize=input.normalize(),
             )
             return fig
@@ -167,22 +165,26 @@ with ui.layout_columns(height=300):
                 data(),
                 objective,
                 "Abandono_Educacion",
-                "Acceden a Banda de Música",
+                "Proporción de Alumnos Totales",
                 normalize=input.normalize(),
             )
             return fig
 
 
 # Fila 2
-with ui.layout_columns(col_widths=[8, 4]):
+with ui.layout_columns(col_widths=[8, 4], height=300):
     with ui.card(full_screen=True):
         ui.card_header("Comparativa")
 
     with ui.card(full_screen=True):
         ui.card_header("Índice de Satisfacción")
         @render_plotly
-        def satisfaccion_pie_plotly():
+        def satisfaccion_plotly():
             objective = 0.8
-            fig = pie_fig(data(), objective)
+            fig = satisfaccion_fig(
+                data(),
+                objective,
+            )
             return fig
+
 
