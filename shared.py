@@ -7,7 +7,7 @@ from shiny import reactive
 app_dir = Path(__file__).parent
 @reactive.calc
 def data() -> pd.DataFrame:
-    df = pd.read_csv(app_dir / "dataset.csv")
+    df = pd.read_csv(app_dir / "dataset_v2.csv")
     df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
     df["Año_Curso"] = pd.Categorical(df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True)
     return df
