@@ -121,11 +121,38 @@ with ui.layout_columns():
 
 
 with ui.layout_columns():
-    with ui.card():
+    with ui.card(full_screen=True):
         ui.card_header("Acceden a la Banda en 3 años")
+        @render_plotly
+        def acceso_banda_plotly():
+            df = data()
+            df = df[df['Años_Inscrito'] == 3]
+            objective = 0.8
+            fig = mean_fig(
+                df,
+                objective,
+                "Banda",
+                "Acceden a Banda de Música",
+                normalize=input.normalize(),
+            )
+            return fig
 
-    with ui.card():
+
+    with ui.card(full_screen=True):
         ui.card_header("Avanzan a estudios superiores")
+        @render_plotly
+        def avance_estudios_plotly():
+            df = data()
+            df = df[df['Curso'] == "Cuarto"]
+            objective = 0.8
+            fig = mean_fig(
+                df,
+                objective,
+                "Promedio_Asistencia",
+                "Porcentaje de Asistencia",
+                normalize=input.normalize(),
+            )
+            return fig
 
     with ui.card():
         ui.card_header("Abandonan la escuela")
