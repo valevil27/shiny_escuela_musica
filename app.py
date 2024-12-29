@@ -69,6 +69,8 @@ with ui.sidebar():
                 class_="text-red",
             )
 
+    ui.input_checkbox("normalize", "Diferencia con Objetivo")
+
 
 # Fila de bars
 with ui.layout_columns():
@@ -77,25 +79,46 @@ with ui.layout_columns():
 
         @render_plotly
         def aproved_plotly():
-            fig = mean_fig(data(), "Aprobado", "Porcentaje de Aprobado")
-            fig.add_hline(y=0.8, line_dash="dash")
+            objective = 0.8
+            fig = mean_fig(
+                data(),
+                objective,
+                "Aprobado",
+                "Porcentaje de Aprobado",
+                normalize=input.normalize(),
+            )
             return fig
 
     with ui.card(full_screen=True):
         ui.card_header("Horas de práctica semanales")
+
         @render_plotly()
         def horas_practica_plotly():
-            fig = mean_fig(data(), "Horas_Practica", "Horas de Práctica Semanales")
-            fig.add_hline(y=4, line_dash="dash")
+            objective = 4
+            fig = mean_fig(
+                data(),
+                objective,
+                "Horas_Practica",
+                "Horas de Práctica Semanales",
+                normalize=input.normalize(),
+            )
             return fig
 
     with ui.card(full_screen=True):
         ui.card_header("Promedio de asistencia")
+
         @render_plotly()
         def asistencia_plotly():
-            fig = mean_fig(data(), "Promedio_Asistencia", "Porcentaje de Asistencia")
-            fig.add_hline(y=0.8, line_dash="dash")
+            objective = 0.8
+            fig = mean_fig(
+                data(),
+                objective,
+                "Promedio_Asistencia",
+                "Porcentaje de Asistencia",
+                normalize=input.normalize(),
+            )
             return fig
+
 
 with ui.layout_columns():
     with ui.card():
