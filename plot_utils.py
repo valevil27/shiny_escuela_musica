@@ -80,31 +80,31 @@ def pie_fig(data: pd.DataFrame, objective: float) -> FigureWidget:
             5: "rgb(0,128,0)",  # Verde intenso
         },
         )
+    fig.update_traces(sort=False, rotation=0)
     # Añadir una línea para el 80%
-    theta = objective *2*np.pi - np.pi/2  # Convertir el porcentaje a radianes
+    theta = - 2*np.pi * objective + np.pi / 2 # Convertir el porcentaje a radianes
     x_start, y_start = 0.5, 0.5  # Centro del gráfico
-    x_end = 0.5 + 0.4 * np.cos(theta)  # Coordenadas finales
-    y_end = 0.5 + 0.4 * np.sin(theta)
+    x_end =  0.41 * np.cos(theta) + x_start  # Coordenadas finales
+    y_end =  0.41 * np.sin(theta) + y_start
 
     fig.add_shape(
         type="line",
         xref="paper", yref="paper",
         x0=x_start, y0=y_start,
         x1=x_end, y1=y_end,
-        line=dict(color="pink", width=2, dash="dash"),
+        line=dict(color="black", width=4, dash="dash"),
     )
 
     # Añadir anotación para la meta
     fig.add_annotation(
-        x=x_end - 0.0,
+        x=x_end - 0.1,
         y=y_end,
         xref="paper", yref="paper",
         text=f"{objective:.0%}",
         showarrow=False,
-        font=dict(size=12, color="pink"),
+        font=dict(size=16, color="black"),
     )
-    fig.update_traces(sort=False, rotation=0)
-    fig.update_layout(showlegend=False, )
+    fig.update_layout(showlegend=False, margin=dict(l=0))
     fig = FigureWidget(fig)
     fig._config = fig._config | {"displayModeBar": False}
     return fig
