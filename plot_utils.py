@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from plotly.graph_objects import FigureWidget
 
@@ -54,4 +55,56 @@ def mean_fig(
     fig._config = fig._config | {"displayModeBar": False}
     if not normalize:
         fig.add_hline(y=objective, line_dash="dash")
+    return fig
+
+def pie_fig(data: pd.DataFrame, objective: float) -> FigureWidget:
+    df = data.Satisfaccion.value_counts().reset_index()
+    df.columns = ["Satisfaccion", "count"]
+
+    # Ordenar los valores de satisfacción en el orden deseado
+    orden_satisfaccion = [4, 3, 2, 1, 5]  # Orden deseado
+    df["Satisfaccion"] = pd.Categorical(
+        df["Satisfaccion"], categories=orden_satisfaccion, ordered=True
+    )
+    df = df.sort_values("Satisfaccion", ascending=True)
+    fig = px.pie(
+        df, 
+        names = "Satisfaccion",
+        values = "count",
+        color="Satisfaccion",  # Columna para asignar colores
+        color_discrete_map={
+            1: "rgb(255,0,0)",  # Rojo intenso
+            2: "rgb(255,102,102)",  # Rojo más claro
+            3: "rgb(255,255,102)",  # Amarillo
+            4: "rgb(144,238,144)",  # Verde claro
+            5: "rgb(0,128,0)",  # Verde intenso
+        },
+        )
+    # Añadir una línea para el 80%
+    theta = objective *2*np.pi - np.pi/2  # Convertir el porcentaje a radianes
+    x_start, y_start = 0.5, 0.5  # Centro del gráfico
+    x_end = 0.5 + 0.4 * np.cos(theta)  # Coordenadas finales
+    y_end = 0.5 + 0.4 * np.sin(theta)
+
+    fig.add_shape(
+        type="line",
+        xref="paper", yref="paper",
+        x0=x_start, y0=y_start,
+        x1=x_end, y1=y_end,
+        line=dict(color="pink", width=2, dash="dash"),
+    )
+
+    # Añadir anotación para la meta
+    fig.add_annotation(
+        x=x_end - 0.0,
+        y=y_end,
+        xref="paper", yref="paper",
+        text=f"{objective:.0%}",
+        showarrow=False,
+        font=dict(size=12, color="pink"),
+    )
+    fig.update_traces(sort=False, rotation=0)
+    fig.update_layout(showlegend=False, )
+    fig = FigureWidget(fig)
+    fig._config = fig._config | {"displayModeBar": False}
     return fig

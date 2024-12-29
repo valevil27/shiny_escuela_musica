@@ -1,7 +1,8 @@
 from datetime import date
+import numpy as np
 
 # Import data from shared.py
-from plot_utils import mean_fig
+from plot_utils import mean_fig, pie_fig
 from shared import data, filter_options, last_entry_ds, select_choices, courses_df
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
@@ -156,7 +157,7 @@ with ui.layout_columns(height=300):
             )
             return fig
 
-    with ui.card():
+    with ui.card(full_screen=True):
         ui.card_header("Abandonan la escuela")
 
         @render_plotly
@@ -174,8 +175,14 @@ with ui.layout_columns(height=300):
 
 # Fila 2
 with ui.layout_columns(col_widths=[8, 4]):
-    with ui.card():
+    with ui.card(full_screen=True):
         ui.card_header("Comparativa")
 
-    with ui.card():
+    with ui.card(full_screen=True):
         ui.card_header("Índice de Satisfacción")
+        @render_plotly
+        def satisfaccion_pie_plotly():
+            objective = 0.8
+            fig = pie_fig(data(), objective)
+            return fig
+
