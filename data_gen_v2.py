@@ -121,7 +121,7 @@ def generar_alumnos(id_inicial, n_alumnos):
 
 # Generar nuevos datos para alumnos inscritos en años posteriores
 id_inicial = 1
-nuevos_alumnos = 150
+nuevos_alumnos = 300
 df_alumnos = generar_alumnos(id_inicial, nuevos_alumnos)
 
 # Guardar el archivo actualizado
