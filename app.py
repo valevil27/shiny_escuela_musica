@@ -72,8 +72,8 @@ with ui.sidebar():
     ui.input_checkbox("normalize", "Diferencia con Objetivo")
 
 
-# Fila de bars
-with ui.layout_columns():
+# Fila 1
+with ui.layout_columns(height=300):
     with ui.card(full_screen=True):
         ui.card_header("Tasa de aprobados")
 
@@ -120,13 +120,15 @@ with ui.layout_columns():
             return fig
 
 
-with ui.layout_columns():
+# Fila 2
+with ui.layout_columns(height=300):
     with ui.card(full_screen=True):
         ui.card_header("Acceden a la Banda en 3 años")
+
         @render_plotly
         def acceso_banda_plotly():
             df = data()
-            df = df[df['Años_Inscrito'] == 3]
+            df = df[df["Años_Inscrito"] == 3]
             objective = 0.8
             fig = mean_fig(
                 df,
@@ -137,13 +139,13 @@ with ui.layout_columns():
             )
             return fig
 
-
     with ui.card(full_screen=True):
         ui.card_header("Avanzan a estudios superiores")
+
         @render_plotly
         def avance_estudios_plotly():
             df = data()
-            df = df[df['Curso'] == "Cuarto"]
+            df = df[df["Curso"] == "Cuarto"]
             objective = 0.8
             fig = mean_fig(
                 df,
@@ -157,6 +159,20 @@ with ui.layout_columns():
     with ui.card():
         ui.card_header("Abandonan la escuela")
 
+        @render_plotly
+        def abandono_plotly():
+            objective = 0.1
+            fig = mean_fig(
+                data(),
+                objective,
+                "Abandono_Educacion",
+                "Acceden a Banda de Música",
+                normalize=input.normalize(),
+            )
+            return fig
+
+
+# Fila 2
 with ui.layout_columns(col_widths=[8, 4]):
     with ui.card():
         ui.card_header("Comparativa")
