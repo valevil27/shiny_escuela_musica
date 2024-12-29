@@ -4,8 +4,8 @@ from datetime import date
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 
-from plot_utils import avance_fig, mean_fig, satisfaccion_fig
-from shared import courses_df, data, filter_options, last_entry_ds, select_choices
+from plot_utils import avance_fig, comparativa_fig, mean_fig, satisfaccion_fig
+from shared import courses_df, data, filter_options, type_options, last_entry_ds, select_choices
 
 # Idioma local castellano para trabajar con strftime y fechas, _ para no renderizar
 _ = locale.setlocale(locale.LC_TIME, "")
@@ -16,7 +16,7 @@ actual_trim, actual_course = last_entry_ds(date.today())
 @render.express
 def render_title():
     with ui.layout_columns(class_="mt-1 mb-0", col_widths=[8, 4]):
-        ui.h2(f"Escuela de Música - {input.filter()}")
+        ui.h2(f"Escuela de Música - {input.category()}: {input.selected()}")
         ui.div(
             ui.p(
                 "Fecha de consulta: " + date.today().strftime("%d de %B de %Y"),
@@ -48,16 +48,20 @@ with ui.sidebar():
         "trim_start", "Trimestre de Inicio", choices=[1, 2, 3], selected=actual_trim
     )
     ui.input_select(
-        "filter", "Aspecto a Comparar", choices=filter_options, selected="General"
+        "category", "Categoría", choices=filter_options, selected="General"
     )
 
     @render.ui
     def input_sel_filter():
         return ui.input_select(
-            "objective",
+            "selected",
             "Base de la Comparativa",
-            choices=select_choices(data(), input.filter()),
+            choices=select_choices(data(), input.category()),
         )
+
+    ui.input_select(
+        "tipo", "Tipo de Comparativa", choices=type_options, selected="Tasa de aprobados"
+    )
 
     @render.ui
     def error_msg():
@@ -175,8 +179,19 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
     with ui.card(full_screen=True):
         ui.card_header("Comparativa")
 
+        @render_plotly
+        def comparativa_plotly():
+            fig = comparativa_fig(
+                data(),
+                categoria=input.category(),
+                seleccion=input.selected(),
+                # tipo_graf=
+            )
+            return fig
+
     with ui.card(full_screen=True):
         ui.card_header("Índice de Satisfacción")
+
         @render_plotly
         def satisfaccion_plotly():
             objective = 0.8
@@ -185,5 +200,3 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
                 objective,
             )
             return fig
-
-
