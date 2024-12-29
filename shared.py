@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 from shiny import reactive
+from shiny.express import input
 
 app_dir = Path(__file__).parent
 @reactive.calc
@@ -20,6 +21,16 @@ filter_options = [
     "Instrumento",
 ]
 
+type_options = [
+    "Tasa de aprobados",
+    "Horas de práctica",
+    "Asistencia",
+    "Acceso a banda",
+    "Abandono escolar",
+    "Avance de estudios",
+    "Satisfacción",
+]
+
 map_filter_cols = {
     "General": None,
     "Curso": "Año_Curso",
@@ -29,8 +40,12 @@ map_filter_cols = {
 }
 
 @reactive.calc
-def courses_df():
+def courses_df() -> list[str]:
     return data().Año_Curso.sort_values(ascending=False).unique().tolist()
+
+@reactive.calc
+def get_filter() -> str:
+    return input.filter()
 
 trim_df = [1, 2, 3]
 
