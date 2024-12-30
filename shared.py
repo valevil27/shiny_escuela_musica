@@ -6,12 +6,39 @@ from shiny import reactive
 from shiny.express import input
 
 app_dir = Path(__file__).parent
+
+
 @reactive.calc
 def data() -> pd.DataFrame:
-    df = pd.read_csv(app_dir / "dataset_v2.csv")
+    df = pd.read_csv(app_dir / "dataset_v2.csv", parse_dates=["Fecha"])
     df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
-    df["Año_Curso"] = pd.Categorical(df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True)
+    df["Año_Curso"] = pd.Categorical(
+        df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True
+    )
     return df
+
+@reactive.calc
+def filtered_by_date_data() -> pd.DataFrame:
+    df = data().copy()
+    curso_inicio = input.course_start()
+    trim_inicio = int(input.trim_start())
+    date_inicio = course_to_date(trim_inicio, curso_inicio)
+    df = df[df["Fecha"] >= date_inicio]
+    return df
+
+@reactive.calc
+def filtered_data() -> pd.DataFrame:
+    df = data().copy()
+    curso_inicio = input.course_start()
+    trim_inicio = int(input.trim_start())
+    date_inicio = course_to_date(trim_inicio, curso_inicio)
+    df = df[df["Fecha"] >= date_inicio]
+    cat = input.category()
+    sel = input.selected()
+    if cat != "General" and sel != "General":
+        df = df[df[cat] == sel]
+    return df
+
 
 filter_options = [
     "General",
@@ -27,9 +54,19 @@ type_options = [
     "Asistencia",
     "Acceso a banda",
     "Abandono escolar",
-    "Avance de estudios",
+    "Avance a profesional",
     "Satisfacción",
 ]
+
+tipo_col = {
+    "Tasa de aprobados": "Aprobado",
+    "Horas de práctica": "Horas_Practica",
+    "Asistencia": "Promedio_Asistencia",
+    "Acceso a banda": "Banda",
+    "Abandono escolar": "Abandono_Educacion",
+    "Avance a profesional": "Avance_Grado_Profesional",
+    "Satisfacción": "Satisfaccion",
+}
 
 map_filter_cols = {
     "General": None,
@@ -39,13 +76,26 @@ map_filter_cols = {
     "Instrumento": "Profesor",
 }
 
+map_objective = {
+   "Aprobado":0.8,
+   "Horas_Practica":4,
+   "Promedio_Asistencia":0.8,
+   "Banda":0.8,
+   "Abandono_Educacion":0.1,
+   "Avance_Grado_Profesional":0.8,
+   "Satisfaccion":80,
+}
+
+
 @reactive.calc
 def courses_df() -> list[str]:
     return data().Año_Curso.sort_values(ascending=False).unique().tolist()
 
+
 @reactive.calc
 def get_filter() -> str:
     return input.filter()
+
 
 trim_df = [1, 2, 3]
 
@@ -90,6 +140,7 @@ def course_to_date(trim: int, course: str) -> date:
         case _:
             raise ValueError("Unexpected trimester")
     return date(year, month, 1)
+
 
 def period(trim: int, course: str) -> str:
     return f"T{trim} {course}"
