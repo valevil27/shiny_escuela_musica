@@ -57,7 +57,17 @@ def mean_fig(
         hover_data=hover_data,
     )
 
-    fig.update_layout(showlegend=False)
+    # cambiar la leyenda a horizontal
+    fig.for_each_trace(lambda t: t.update(name=t.name.replace("_", " ")))
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom", 
+            y=1.02,
+            xanchor="left",
+            x=0,
+        )
+    )
     fig.update_traces(textposition="auto")
     # Ocultar la barra de herramientas
     fig = FigureWidget(fig)
