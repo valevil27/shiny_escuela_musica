@@ -1,7 +1,8 @@
 from typing import Literal
 import pandas as pd
 import plotly.express as px
-from plotly.graph_objects import FigureWidget
+from plotly.graph_objects import Figure, FigureWidget
+from shared import tipo_col, map_objective
 
 
 def mean_fig(
@@ -167,13 +168,34 @@ def avance_fig(
 
 def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> str:
     match column:
-        case "Aprobado" | "Horas_Practica" | "Promedio_Asistencia" | "Abandono":
+        case (
+            "Aprobado"
+            | "Horas_Practica"
+            | "Promedio_Asistencia"
+            | "Banda"
+            | "Abandono_Educacion"
+            | "Satisfaccion"
+        ):
             return (
                 data.groupby(categoria, observed=False)[column]
                 .mean()
                 .sort_index()
                 .reset_index()
             )
+        case "Avance_Grado_Profesional":
+            data = data[data["Curso"] == "Cuarto"]  # Solo los alumnos de cuarto
+            data = data[data["Trimestre"] == 3]  # Solo ultimo trimestre
+            return (
+                data.groupby(categoria, observed=True)[
+                    ["Avance_Grado_Profesional", "Pruebas_Grado_Profesional"]
+                ]
+                .apply(lambda x: x.sum() / x.count())
+                .reset_index()
+            )
+        case "Satisfaccion":
+            return data
+        case _:
+            raise ValueError("Tipo de gráfica no soportada")
 
 
 def comparativa_fig(
@@ -182,30 +204,107 @@ def comparativa_fig(
     seleccion: str = "General",
     tipo_graf: str = "Tasa de aprobados",
 ) -> FigureWidget:
-    tipo_col = {
-        "Tasa de aprobados": "Aprobado",
-        "Horas de práctica": "Horas_Practica",
-        "Asistencia": "Promedio_Asistencia",
-        "Acceso a banda": "Banda",
-        "Abandono escolar": "Abandono",
-        "Avance de estudios": "Avance_Grado_Profesional",
-        "Satisfacción": "Satisfaccion",
-    }
+    col = tipo_col[tipo_graf]
     if categoria == "General":
         return figure_text("Seleccione una categoría para comenzar la comparativa.")
 
-    df = prepare_df(data, categoria, tipo_col[tipo_graf])
+    df = prepare_df(data, categoria, col)
+    title = f"{tipo_graf} por {categoria}"
+    if seleccion != "General" and tipo_graf != "Satisfacción":
+        # Evitamos que se quede el mensaje del error
+        try:
+            df[col] = df[col] - df[df[categoria] == seleccion][col].tolist()[0]
+        except Exception as _:
+            return figure_text("Cargando")
+        title = f"{title}: {seleccion}"
 
-    fig = px.bar(df, x=categoria, y=tipo_col[tipo_graf], title=f"{tipo_graf} por {categoria}")
+    # Trato especial para avance
+    if col == "Avance_Grado_Profesional":
+        fig = fig_bar_acceso(df, categoria)
+    elif col == "Satisfaccion":
+        fig = fig_bar_satisfaccion(data, categoria)
+    else:
+        fig = px.bar(df, x=categoria, y=col, title=title)
+    fig = FigureWidget(fig)
+    fig._config = fig._config | {"displayModeBar": False}
+    fig.add_hline(y=map_objective[col], line_dash = "dash")
     return fig
 
+def fig_bar_acceso(df: pd.DataFrame, categoria: str) -> Figure:
+    fig = px.bar(
+        df,
+        x=categoria,
+        y=["Pruebas_Grado_Profesional", "Avance_Grado_Profesional"],
+        barmode="group",
+        labels={
+            "value": "Porcentaje de Alumnos de Cuarto",
+            "variable": "Tipo",
+            "Año_Curso": "Curso",
+        },
+    )
+    fig.for_each_trace(lambda t: t.update(name=t.name.replace("_", " ")))
+    fig.update_layout(
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",  # Anclarla en la parte inferior
+            y=1.02,
+            xanchor="left",
+            x=0,
+        )
+    )
+    return fig
+
+def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure: 
+    df = (
+        df.groupby([categoria, "Satisfaccion"], observed=False)["ID_Alumno"] 
+        .count()
+        .sort_index()
+        .reset_index()
+    )
+    df["Porcentaje"] = df.groupby([categoria], observed=False)["ID_Alumno"].transform(
+        lambda x: x / x.sum() * 100
+    )
+    orden_satisfaccion = [5, 4, 3, 2, 1]  # Orden deseado
+    df["Satisfaccion"] = pd.Categorical(
+        df["Satisfaccion"], categories=orden_satisfaccion, ordered=True
+    )
+    df = df.sort_values([categoria, "Satisfaccion"], ascending=True)
+    fig = px.bar(
+        df,
+        x=categoria,
+        y="Porcentaje",
+        color=df["Satisfaccion"].astype(str),
+        barmode="stack",
+        # Puedes asignar tus colores de satisfacción
+        color_discrete_map={
+            "1": "rgb(255,0,0)",  # Rojo intenso
+            "2": "rgb(255,102,102)",  # Rojo más claro
+            "3": "rgb(255,255,102)",  # Amarillo
+            "4": "rgb(144,238,144)",  # Verde claro
+            "5": "rgb(0,128,0)",  # Verde intenso
+        },
+        labels={
+            "Año_Curso": "Curso",
+            "color": "Nivel de Satisfacción",
+            "Porcentaje": "Porcentaje",
+        },
+        hover_data={
+            "Satisfaccion": False,
+            categoria: False,
+            "Porcentaje": ":.2f",
+        },
+    )
+
+    # 4. Ajustamos el layout si queremos
+    fig.update_layout(yaxis_title="Porcentaje", xaxis_title=categoria, showlegend=False)
+    return fig
 
 def figure_text(texto: str) -> FigureWidget:
     # Creamos un DataFrame mínimo con una sola fila
     df_text = pd.DataFrame({
         "x": [0],
         "y": [0],
-        "texto": [texto],  
+        "texto": [texto],
     })
 
     # Generamos una figura scatter usando la columna 'texto'
@@ -218,18 +317,16 @@ def figure_text(texto: str) -> FigureWidget:
 
     # Ajustes para ocultar todo excepto el texto
     fig.update_traces(
-        textposition="middle center",  
-        marker_opacity=0,  
-        textfont=dict(size=24)
+        textposition="middle center", marker_opacity=0, textfont=dict(size=24)
     )
     # Centrar texto
     fig.update_xaxes(
         visible=False,
-        range=[-1, 1],  
+        range=[-1, 1],
     )
     fig.update_yaxes(visible=False, range=[-1, 1])
     fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),  
+        margin=dict(l=0, r=0, t=0, b=0),
         plot_bgcolor="white",
     )
 

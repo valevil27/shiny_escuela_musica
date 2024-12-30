@@ -11,7 +11,6 @@ from shared import courses_df, data, filter_options, type_options, last_entry_ds
 _ = locale.setlocale(locale.LC_TIME, "")
 actual_trim, actual_course = last_entry_ds(date.today())
 
-
 # Barra de título
 @render.express
 def render_title():
@@ -185,7 +184,7 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
                 data(),
                 categoria=input.category(),
                 seleccion=input.selected(),
-                # tipo_graf=
+                tipo_graf=input.tipo()
             )
             return fig
 
