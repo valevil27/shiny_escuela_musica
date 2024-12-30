@@ -18,7 +18,7 @@ app_dir = Path(__file__).parent
 
 @reactive.calc
 def data() -> pd.DataFrame:
-    df = pd.read_csv(app_dir / "dataset_v2.csv", parse_dates=["Fecha"])
+    df = pd.read_csv(app_dir / "dataset.csv", parse_dates=["Fecha"])
     df["Año_Curso"] = pd.Categorical(
         df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True
     )
@@ -30,16 +30,20 @@ def data() -> pd.DataFrame:
     return df
 
 
+# FIX si sale None resolver referencias
 def filter_data(
     df: pd.DataFrame,
     date: datetime,
     category: str = "General",
     selected: str = "General",
-):
+) -> pd.DataFrame | None:
     df = df[df["Fecha"] >= date]
     if selected == "General":
         return df
-    df = df[df[category] == selected]
+    try:
+        df = df[df[category] == selected]
+    except Exception:
+        return None
     df["Año_Curso"] = df["Año_Curso"].cat.remove_unused_categories()
     df["Trimestre"] = df["Trimestre"].cat.remove_unused_categories()
     return df
@@ -104,8 +108,8 @@ def get_objectives():
 
 
 @reactive.calc
-def courses_df() -> list[str]:
-    return data().Año_Curso.sort_values(ascending=False).unique().tolist()
+def courses_df() -> list:
+    return data()["Año_Curso"].sort_values(ascending=False).unique().tolist() # type: ignore
 
 
 @reactive.calc
@@ -116,7 +120,7 @@ def get_filter() -> str:
 trim_df = [1, 2, 3]
 
 
-def last_entry_ds(today: date) -> tuple[str, int]:
+def last_entry_ds(today: date) -> tuple[int, str]:
     today = date.today()
     month, year = today.month, today.year
     match month:
@@ -142,7 +146,7 @@ def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
     return base_lst
 
 
-def course_to_date(trim: int | str, course: str) -> date:
+def course_to_date(trim: int | str, course: str) -> datetime:
     if type(trim) is str:
         trim = int(trim)
     match trim:
@@ -162,7 +166,7 @@ def course_to_date(trim: int | str, course: str) -> date:
 
 def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) -> float:
     if type(objective) is not str:
-        return objective
+        return float(objective)
     amount = float(objective) + 1
     match col:
         case "Aprobado":

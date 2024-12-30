@@ -4,7 +4,13 @@ from datetime import date
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 
-from plot_utils import avance_fig, comparativa_fig, mean_fig, satisfaccion_fig
+from plot_utils import (
+    avance_fig,
+    comparativa_fig,
+    figure_text,
+    mean_fig,
+    satisfaccion_fig,
+)
 from shared import (
     tipo_col,
     course_to_date,
@@ -51,6 +57,7 @@ def render_title():
 with ui.sidebar():
     ui.h4("Filtros")
 
+    # Curso inicio de la comparativa. Por defecto es el último
     @render.ui
     def select_course_start():
         return ui.input_select(
@@ -60,22 +67,27 @@ with ui.sidebar():
             selected=actual_course,
         )
 
+    # Trimestre inicio de la comparativa. Por defecto es el último
     ui.input_select(
-        "trim_start", "Trimestre de Inicio", choices=[1, 2, 3], selected=actual_trim
+        "trim_start",
+        "Trimestre de Inicio",
+        choices=["1", "2", "3"],
+        selected=str(actual_trim),
     )
+    # Categoría a comparar
     ui.input_select("category", "Categoría", choices=filter_options, selected="General")
 
     @render.ui
     def input_sel_filter():
         return ui.input_select(
             "selected",
-            "Base de la Comparativa",
+            "Seleccionar",
             choices=select_choices(data(), input.category()),
         )
 
     ui.input_select(
         "tipo",
-        "Tipo de Comparativa",
+        "Tipo de Comparación",
         choices=type_options,
         selected="Tasa de aprobados",
     )
@@ -107,6 +119,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             logger.debug(df)
             fig = mean_fig(
                 df,
@@ -129,6 +143,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             fig = mean_fig(
                 df,
                 objective,
@@ -150,6 +166,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             fig = mean_fig(
                 df,
                 objective,
@@ -176,6 +194,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             fig = mean_fig(
                 df,
                 objective,
@@ -197,6 +217,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             fig = mean_fig(
                 df,
                 objective,
@@ -217,6 +239,8 @@ with ui.layout_columns(height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             df = df[df["Curso"] == "Cuarto"]
             objective = get_objectives()["Avance_Grado_Profesional"]
             fig = avance_fig(
@@ -238,6 +262,8 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
             )
+            if df is None:
+                return figure_text("Cargando...")
             tipo_graf = input.tipo()
             fig = comparativa_fig(
                 df,
@@ -260,6 +286,8 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
                 category=input.category(),
                 selected=input.selected(),
             )
+            if df is None:
+                return figure_text("Cargando...")
             fig = satisfaccion_fig(
                 df,
                 objective,
