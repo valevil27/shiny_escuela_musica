@@ -15,7 +15,11 @@ actual_trim, actual_course = last_entry_ds(date.today())
 @render.express
 def render_title():
     with ui.layout_columns(class_="mt-1 mb-0", col_widths=[8, 4]):
-        ui.h2(f"Escuela de Música - {input.category()}: {input.selected()}")
+        title =f"Escuela de Música - {input.category()}" 
+        sel = input.selected()
+        if sel != "General":
+            title = f"{title}: {input.selected()}"
+        ui.h2(title)
         ui.div(
             ui.p(
                 "Fecha de consulta: " + date.today().strftime("%d de %B de %Y"),
