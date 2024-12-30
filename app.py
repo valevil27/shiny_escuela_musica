@@ -6,7 +6,7 @@ from shinywidgets import render_plotly
 
 from plot_utils import avance_fig, comparativa_fig, mean_fig, satisfaccion_fig
 from shared import (
-    calculate_objective,
+    tipo_col,
     course_to_date,
     courses_df,
     data,
@@ -220,7 +220,7 @@ with ui.layout_columns(height=300):
             df = df[df["Curso"] == "Cuarto"]
             objective = get_objectives()["Avance_Grado_Profesional"]
             fig = avance_fig(
-               df,
+                df,
                 objective,
                 normalize=input.normalize(),
             )
@@ -234,16 +234,17 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
 
         @render_plotly
         def comparativa_plotly():
-
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
             )
+            tipo_graf = input.tipo()
             fig = comparativa_fig(
                 df,
+                objective=get_objectives()[tipo_col[tipo_graf]],
                 categoria=input.category(),
                 seleccion=input.selected(),
-                tipo_graf=input.tipo(),
+                tipo_graf=tipo_graf,
             )
             return fig
 

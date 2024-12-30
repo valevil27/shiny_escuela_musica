@@ -2,7 +2,7 @@ from typing import Literal
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objects import Figure, FigureWidget
-from shared import tipo_col, map_objective
+from shared import tipo_col
 
 
 def mean_fig(
@@ -208,6 +208,7 @@ def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> str:
 
 def comparativa_fig(
     data: pd.DataFrame,
+    objective: float,
     categoria: str = "General",
     seleccion: str = "General",
     tipo_graf: str = "Tasa de aprobados",
@@ -236,7 +237,7 @@ def comparativa_fig(
     fig = FigureWidget(fig)
     fig._config = fig._config | {"displayModeBar": False}
     if seleccion == "General":
-        fig.add_hline(y=map_objective[col], line_dash="dash")
+        fig.add_hline(y=objective, line_dash="dash")
     return fig
 
 
