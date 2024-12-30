@@ -1,9 +1,17 @@
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
 from shiny import reactive
 from shiny.express import input
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # muestra mensajes de nivel INFO o superior
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 app_dir = Path(__file__).parent
 
@@ -28,15 +36,22 @@ def filtered_by_date_data() -> pd.DataFrame:
 
 @reactive.calc
 def filtered_data() -> pd.DataFrame:
-    df = data().copy()
+    df = pd.read_csv(app_dir / "dataset_v2.csv", parse_dates=["Fecha"])
+    df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
+    df["Año_Curso"] = pd.Categorical(
+        df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True
+    )
     curso_inicio = input.course_start()
     trim_inicio = int(input.trim_start())
     date_inicio = course_to_date(trim_inicio, curso_inicio)
     df = df[df["Fecha"] >= date_inicio]
-    cat = input.category()
-    sel = input.selected()
-    if cat != "General" and sel != "General":
-        df = df[df[cat] == sel]
+    return df
+
+def filter_data(df: pd.DataFrame, date: datetime, category: str, selected: str):
+    df = df[df["Fecha"] >= date]
+    if selected == "General":
+        return df
+    df = df[df[category] == selected]
     return df
 
 
@@ -126,20 +141,22 @@ def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
     return base_lst
 
 
-def course_to_date(trim: int, course: str) -> date:
+def course_to_date(trim: int | str, course: str) -> date:
+    if type(trim) is str: 
+        trim = int(trim)
     match trim:
         case 1:
-            month = 1
+            month = 12
             year = int(course.split("-")[0])
         case 2:
-            month = 2
-            year = int(course.split("-")[0])
-        case 3:
             month = 3
+            year = int(course.split("-")[1])
+        case 3:
+            month = 6
             year = int(course.split("-")[1])
         case _:
             raise ValueError("Unexpected trimester")
-    return date(year, month, 1)
+    return datetime(year, month, 1)
 
 
 def period(trim: int, course: str) -> str:
