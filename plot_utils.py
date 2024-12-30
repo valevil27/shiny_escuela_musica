@@ -123,8 +123,7 @@ def satisfaccion_fig(
 def avance_fig(
     data: pd.DataFrame, objective: float, normalize: bool = False
 ) -> FigureWidget:
-    df = data
-    df = df[df["Curso"] == "Cuarto"]
+    df = data[data["Curso"] == "Cuarto"]
     df = df[df["Trimestre"] == 3]
     if len(df) == 0:
         return figure_text("No se han realizado pruebas a estudios superiores en este periodo.", 14)
@@ -236,7 +235,8 @@ def comparativa_fig(
         fig = px.bar(df, x=categoria, y=col, title=title)
     fig = FigureWidget(fig)
     fig._config = fig._config | {"displayModeBar": False}
-    fig.add_hline(y=map_objective[col], line_dash="dash")
+    if seleccion == "General":
+        fig.add_hline(y=map_objective[col], line_dash="dash")
     return fig
 
 

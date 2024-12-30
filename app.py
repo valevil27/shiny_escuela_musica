@@ -6,11 +6,13 @@ from shinywidgets import render_plotly
 
 from plot_utils import avance_fig, comparativa_fig, mean_fig, satisfaccion_fig
 from shared import (
+    calculate_objective,
     course_to_date,
     courses_df,
     data,
     filter_options,
     filter_data,
+    get_objectives,
     type_options,
     last_entry_ds,
     select_choices,
@@ -98,7 +100,7 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def aproved_plotly():
-            objective = 0.8
+            objective = get_objectives()["Aprobado"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -120,7 +122,7 @@ with ui.layout_columns(height=300):
 
         @render_plotly()
         def horas_practica_plotly():
-            objective = 4
+            objective = get_objectives()["Horas_Practica"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -141,7 +143,7 @@ with ui.layout_columns(height=300):
 
         @render_plotly()
         def asistencia_plotly():
-            objective = 0.8
+            objective = get_objectives()["Promedio_Asistencia"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -167,7 +169,7 @@ with ui.layout_columns(height=300):
         def acceso_banda_plotly():
             df = data()
             df = df[df["Años_Inscrito"] == 3]
-            objective = 0.8
+            objective = get_objectives()["Banda"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -188,7 +190,7 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def abandono_plotly():
-            objective = 0.1
+            objective = get_objectives()["Abandono_Educacion"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -216,10 +218,9 @@ with ui.layout_columns(height=300):
                 selected=input.selected(),
             )
             df = df[df["Curso"] == "Cuarto"]
-            objective = 0.8
-            # TODO: Aviso de que no se han realizado pruebas al conservatorio en el periodo seleccionado
+            objective = get_objectives()["Avance_Grado_Profesional"]
             fig = avance_fig(
-                df,
+               df,
                 objective,
                 normalize=input.normalize(),
             )
@@ -233,6 +234,7 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
 
         @render_plotly
         def comparativa_plotly():
+
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -250,7 +252,7 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
 
         @render_plotly
         def satisfaccion_plotly():
-            objective = 0.8
+            objective = get_objectives()["Satisfaccion"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),

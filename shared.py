@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -82,14 +82,25 @@ map_filter_cols = {
 }
 
 map_objective = {
-    "Aprobado": 0.8,
-    "Horas_Practica": 4,
+    "Aprobado": "+0.05",
+    "Horas_Practica": 5,
     "Promedio_Asistencia": 0.8,
     "Banda": 0.8,
     "Abandono_Educacion": 0.1,
-    "Avance_Grado_Profesional": 0.8,
-    "Satisfaccion": 80,
+    "Avance_Grado_Profesional": "+0.1",
+    "Satisfaccion": 0.8,
 }
+
+
+@reactive.calc
+def get_objectives():
+    df = data().copy()
+    start_time = datetime.today() - timedelta(days=2 * 365)
+    df = filter_data(df, start_time)
+    objectives = dict()
+    for col, obj in map_objective.items():
+        objectives[col] = calculate_objective(obj, df, col)
+    return objectives
 
 
 @reactive.calc
@@ -149,9 +160,42 @@ def course_to_date(trim: int | str, course: str) -> date:
     return datetime(year, month, 1)
 
 
+def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) -> float:
+    if type(objective) is not str:
+        return objective
+    amount = float(objective) + 1
+    match col:
+        case "Aprobado":
+            prev = (
+                data.groupby(["Año_Curso", "Trimestre"], observed=True)[col]
+                .mean()
+                .sort_index()
+            ).iloc[-2]
+            return prev * amount
+
+        case "Avance_Grado_Profesional":
+            df = data[data["Curso"] == "Cuarto"]
+            df = df[df["Trimestre"] == 3]
+            if len(df) == 0:
+                return 0
+            prev = (
+                df.groupby("Año_Curso", observed=True)["Avance_Grado_Profesional"]
+                .apply(lambda x: x.sum() / x.count())
+                .iloc[-2]
+            )
+            return prev * amount
+        case _:
+            raise ValueError("Columna no implementada")
+
+    return amount
+
+
 def period(trim: int, course: str) -> str:
     return f"T{trim} {course}"
 
 
 if __name__ == "__main__":
-    print(last_entry_ds(date.today()))
+    df = data()
+    print(calculate_objective("-0.2", data(), "Aprobado"))
+    print(calculate_objective("+0.2", data(), "Aprobado"))
+    print(data())
