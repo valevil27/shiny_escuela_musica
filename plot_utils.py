@@ -13,6 +13,7 @@ def mean_fig(
     normalize: bool = False,
     barmode: Literal["group", "stack"] = "group",
 ) -> FigureWidget:
+    """ Crea una figura de barras con la media de una columna de un DataFrame. """
     if not name:
         name = col_name
 
@@ -82,6 +83,7 @@ def satisfaccion_fig(
     data: pd.DataFrame,
     objective: float,
 ) -> FigureWidget:
+    """ Crea una figura de barras con la satisfacción de los alumnos. """
     df = (
         data.groupby(["Año_Curso", "Satisfaccion"], observed=True)["ID_Alumno"]
         .count()
@@ -134,6 +136,7 @@ def satisfaccion_fig(
 def avance_fig(
     data: pd.DataFrame, objective: float, normalize: bool = False
 ) -> FigureWidget:
+    """ Crea una figura de barras con el avance de los alumnos de cuarto. """
     df = data[data["Curso"] == "Cuarto"]
     df = df[df["Trimestre"] == 3]
     if len(df) == 0:
@@ -188,6 +191,7 @@ def avance_fig(
 
 
 def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> pd.DataFrame | None:
+    """ Prepara un DataFrame para ser usado en una gráfica de barras. """
     match column:
         case (
             "Aprobado"
@@ -228,6 +232,7 @@ def comparativa_fig(
     seleccion: str = "General",
     tipo_graf: str = "Tasa de aprobados",
 ) -> FigureWidget:
+    """ Crea una figura de barras comparativa. """
     col = tipo_col[tipo_graf]
     if categoria == "General":
         return figure_text("Seleccione una categoría para comenzar la comparativa.")
@@ -259,6 +264,7 @@ def comparativa_fig(
 
 
 def fig_bar_acceso(df: pd.DataFrame, categoria: str) -> Figure:
+    """ Crea una figura de barras con el avance de los alumnos de cuarto. """
     fig = px.bar(
         df,
         x=categoria,
@@ -284,6 +290,7 @@ def fig_bar_acceso(df: pd.DataFrame, categoria: str) -> Figure:
 
 
 def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure:
+    """ Crea una figura de barras con la satisfacción de los alumnos. """
     df = (
         df.groupby([categoria, "Satisfaccion"], observed=False)["ID_Alumno"]
         .count()
@@ -330,6 +337,7 @@ def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure:
 
 
 def figure_text(texto: str, size: int = 24) -> FigureWidget:
+    """ Crea una figura con un texto centrado. """
     # Creamos un DataFrame mínimo con una sola fila
     df_text = pd.DataFrame({
         "x": [0],
