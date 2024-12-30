@@ -73,7 +73,7 @@ def satisfaccion_fig(
     objective: float,
 ) -> FigureWidget:
     df = (
-        data.groupby(["Año_Curso", "Satisfaccion"], observed=False)["ID_Alumno"]
+        data.groupby(["Año_Curso", "Satisfaccion"], observed=True)["ID_Alumno"]
         .count()
         .sort_index()
         .reset_index()

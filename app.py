@@ -121,8 +121,14 @@ with ui.layout_columns(height=300):
         @render_plotly()
         def horas_practica_plotly():
             objective = 4
-            fig = mean_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
+            fig = mean_fig(
+                df,
                 objective,
                 "Horas_Practica",
                 "Horas de Práctica Semanales",
@@ -136,8 +142,14 @@ with ui.layout_columns(height=300):
         @render_plotly()
         def asistencia_plotly():
             objective = 0.8
-            fig = mean_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
+            fig = mean_fig(
+                df,
                 objective,
                 "Promedio_Asistencia",
                 "Promedio de Asistencia",
@@ -156,6 +168,12 @@ with ui.layout_columns(height=300):
             df = data()
             df = df[df["Años_Inscrito"] == 3]
             objective = 0.8
+            df = filter_data(
+                data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
             fig = mean_fig(
                 df,
                 objective,
@@ -171,8 +189,14 @@ with ui.layout_columns(height=300):
         @render_plotly
         def abandono_plotly():
             objective = 0.1
-            fig = mean_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
+            fig = mean_fig(
+                df,
                 objective,
                 "Abandono_Educacion",
                 "Proporción de Alumnos Totales",
@@ -185,9 +209,15 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def avance_estudios_plotly():
-            df = data()
+            df = filter_data(
+                data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
             df = df[df["Curso"] == "Cuarto"]
             objective = 0.8
+            # TODO: Aviso de que no se han realizado pruebas al conservatorio en el periodo seleccionado
             fig = avance_fig(
                 df,
                 objective,
@@ -217,8 +247,14 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
         @render_plotly
         def satisfaccion_plotly():
             objective = 0.8
-            fig = satisfaccion_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
+            fig = satisfaccion_fig(
+                df,
                 objective,
             )
             return fig
