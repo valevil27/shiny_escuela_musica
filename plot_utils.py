@@ -19,8 +19,7 @@ def mean_fig(
     fill_value = objective if normalize else 0
 
     df = (
-        data
-        .groupby(["Año_Curso", "Trimestre"], observed=True)[col_name]
+        data.groupby(["Año_Curso", "Trimestre"], observed=True)[col_name]
         .mean()
         .sort_index()
     )
@@ -127,6 +126,8 @@ def avance_fig(
     df = data
     df = df[df["Curso"] == "Cuarto"]
     df = df[df["Trimestre"] == 3]
+    if len(df) == 0:
+        return figure_text("No se han realizado pruebas a estudios superiores en este periodo.", 14)
     # Contar cuantos alumnos han pasado al grado profesional cada año
     df = (
         df.groupby("Año_Curso", observed=True)[
@@ -310,7 +311,7 @@ def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure:
     return fig
 
 
-def figure_text(texto: str) -> FigureWidget:
+def figure_text(texto: str, size: int = 24) -> FigureWidget:
     # Creamos un DataFrame mínimo con una sola fila
     df_text = pd.DataFrame({
         "x": [0],
@@ -328,7 +329,7 @@ def figure_text(texto: str) -> FigureWidget:
 
     # Ajustes para ocultar todo excepto el texto
     fig.update_traces(
-        textposition="middle center", marker_opacity=0, textfont=dict(size=24)
+        textposition="middle center", marker_opacity=0, textfont=dict(size=size)
     )
     # Centrar texto
     fig.update_xaxes(
