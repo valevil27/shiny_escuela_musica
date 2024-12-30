@@ -20,7 +20,7 @@ app_dir = Path(__file__).parent
 def data() -> pd.DataFrame:
     df = pd.read_csv(app_dir / "dataset.csv", parse_dates=["Fecha"])
     df["Año_Curso"] = pd.Categorical(
-        df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True
+            df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True # type: ignore
     )
     df["Trimestre"] = pd.Categorical(
         df["Trimestre"],
@@ -30,18 +30,17 @@ def data() -> pd.DataFrame:
     return df
 
 
-# FIX si sale None resolver referencias
 def filter_data(
     df: pd.DataFrame,
     date: datetime,
     category: str = "General",
     selected: str = "General",
 ) -> pd.DataFrame | None:
-    df = df[df["Fecha"] >= date]
+    df = df[df["Fecha"] >= date] # type: ignore
     if selected == "General":
         return df
     try:
-        df = df[df[category] == selected]
+        df = df[df[category] == selected] # type: ignore
     except Exception:
         return None
     df["Año_Curso"] = df["Año_Curso"].cat.remove_unused_categories()

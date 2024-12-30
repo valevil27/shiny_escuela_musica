@@ -9,7 +9,7 @@ def mean_fig(
     data: pd.DataFrame,
     objective: float,
     col_name: str,
-    name: str = None,
+    name: str | None = None,
     normalize: bool = False,
     barmode: Literal["group", "stack"] = "group",
 ) -> FigureWidget:
@@ -25,7 +25,8 @@ def mean_fig(
     )
     df = df.reindex(
         pd.MultiIndex.from_product(
-            [df.index.levels[0], df.index.levels[1]], names=["Año_Curso", "Trimestre"]
+            [df.index.levels[0], df.index.levels[1]], # type: ignore
+            names=["Año_Curso", "Trimestre"], 
         ),
         fill_value=fill_value,
     ).reset_index()
@@ -62,7 +63,7 @@ def mean_fig(
     fig.update_layout(
         legend=dict(
             orientation="h",
-            yanchor="bottom", 
+            yanchor="bottom",
             y=1.02,
             xanchor="left",
             x=0,
@@ -136,10 +137,12 @@ def avance_fig(
     df = data[data["Curso"] == "Cuarto"]
     df = df[df["Trimestre"] == 3]
     if len(df) == 0:
-        return figure_text("No se han realizado pruebas a estudios superiores en este periodo.", 14)
+        return figure_text(
+            "No se han realizado pruebas a estudios superiores en este periodo.", 14
+        )
     # Contar cuantos alumnos han pasado al grado profesional cada año
     df = (
-        df.groupby("Año_Curso", observed=True)[
+        df.groupby("Año_Curso", observed=True)[  # type: ignore
             ["Avance_Grado_Profesional", "Pruebas_Grado_Profesional"]
         ]
         .apply(lambda x: x.sum() / x.count())
@@ -184,7 +187,7 @@ def avance_fig(
     return fig
 
 
-def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> str:
+def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> pd.DataFrame | None:
     match column:
         case (
             "Aprobado"
@@ -201,10 +204,12 @@ def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> str:
                 .reset_index()
             )
         case "Avance_Grado_Profesional":
-            data = data[data["Curso"] == "Cuarto"]  # Solo los alumnos de cuarto
-            data = data[data["Trimestre"] == 3]  # Solo ultimo trimestre
+            df = data[data["Curso"] == "Cuarto"]  # Solo los alumnos de cuarto
+            df = df[df["Trimestre"] == 3]  # Solo ultimo trimestre
+            if type(df) is not pd.DataFrame:
+                return None
             return (
-                data.groupby(categoria, observed=True)[
+                df.groupby(categoria, observed=True)[
                     ["Avance_Grado_Profesional", "Pruebas_Grado_Profesional"]
                 ]
                 .apply(lambda x: x.sum() / x.count())
@@ -228,11 +233,13 @@ def comparativa_fig(
         return figure_text("Seleccione una categoría para comenzar la comparativa.")
 
     df = prepare_df(data, categoria, col)
+    if df is None:
+        return figure_text("Cargando")
     title = f"{tipo_graf} por {categoria}"
     if seleccion != "General" and tipo_graf != "Satisfacción":
         # Evitamos que se quede el mensaje del error
         try:
-            df[col] = df[col] - df[df[categoria] == seleccion][col].tolist()[0]
+            df[col] = df[col] - df[df[categoria] == seleccion][col].tolist()[0]  # type: ignore
         except Exception as _:
             return figure_text("Cargando")
         title = f"{title}: {seleccion}"

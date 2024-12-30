@@ -1,6 +1,7 @@
 import locale
 from datetime import date
 
+import pandas as pd
 from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 
@@ -112,7 +113,10 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def aproved_plotly():
-            objective = get_objectives()["Aprobado"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Aprobado"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -136,7 +140,10 @@ with ui.layout_columns(height=300):
 
         @render_plotly()
         def horas_practica_plotly():
-            objective = get_objectives()["Horas_Practica"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Horas_Practica"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -159,7 +166,10 @@ with ui.layout_columns(height=300):
 
         @render_plotly()
         def asistencia_plotly():
-            objective = get_objectives()["Promedio_Asistencia"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Promedio_Asistencia"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -187,7 +197,10 @@ with ui.layout_columns(height=300):
         def acceso_banda_plotly():
             df = data()
             df = df[df["Años_Inscrito"] == 3]
-            objective = get_objectives()["Banda"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Banda"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -210,7 +223,10 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def abandono_plotly():
-            objective = get_objectives()["Abandono_Educacion"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Abandono_Educacion"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
@@ -233,7 +249,7 @@ with ui.layout_columns(height=300):
 
         @render_plotly
         def avance_estudios_plotly():
-            df = filter_data(
+            df: pd.DataFrame | None = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
                 category=input.category(),
@@ -241,8 +257,11 @@ with ui.layout_columns(height=300):
             )
             if df is None:
                 return figure_text("Cargando...")
-            df = df[df["Curso"] == "Cuarto"]
-            objective = get_objectives()["Avance_Grado_Profesional"]
+            df = df[df["Curso"] == "Cuarto"] # type: ignore
+            objective = get_objectives()
+            if objective is None or df is None:
+                return figure_text("Cargando...")
+            objective = objective["Avance_Grado_Profesional"]
             fig = avance_fig(
                 df,
                 objective,
@@ -265,9 +284,12 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
             if df is None:
                 return figure_text("Cargando...")
             tipo_graf = input.tipo()
+            objective = get_objectives()
+            if objective is None or df is None:
+                return figure_text("Cargando...")
             fig = comparativa_fig(
                 df,
-                objective=get_objectives()[tipo_col[tipo_graf]],
+                objective=objective[tipo_col[tipo_graf]],
                 categoria=input.category(),
                 seleccion=input.selected(),
                 tipo_graf=tipo_graf,
@@ -279,7 +301,10 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
 
         @render_plotly
         def satisfaccion_plotly():
-            objective = get_objectives()["Satisfaccion"]
+            objective = get_objectives()
+            if objective is None:
+                return figure_text("Cargando...")
+            objective = objective["Satisfaccion"]
             df = filter_data(
                 data(),
                 date=course_to_date(input.trim_start(), input.course_start()),
