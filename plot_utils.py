@@ -185,7 +185,7 @@ def prepare_df(data: pd.DataFrame, categoria: str, column: str) -> str:
             | "Satisfaccion"
         ):
             return (
-                data.groupby(categoria, observed=False)[column]
+                data.groupby(categoria, observed=True)[column]
                 .mean()
                 .sort_index()
                 .reset_index()

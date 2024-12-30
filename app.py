@@ -233,8 +233,12 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
 
         @render_plotly
         def comparativa_plotly():
-            fig = comparativa_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+            )
+            fig = comparativa_fig(
+                df,
                 categoria=input.category(),
                 seleccion=input.selected(),
                 tipo_graf=input.tipo(),
