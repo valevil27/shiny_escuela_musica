@@ -141,7 +141,7 @@ def avance_fig(
     df = df[df["Trimestre"] == 3]
     if len(df) == 0:
         return figure_text(
-            "No se han realizado pruebas a estudios superiores en este periodo.", 14
+            "No se han realizado pruebas a estudios profesionales en este periodo.", 14
         )
     # Contar cuantos alumnos han pasado al grado profesional cada año
     df = (
