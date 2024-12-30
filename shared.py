@@ -18,6 +18,8 @@ app_dir = Path(__file__).parent
 
 @reactive.calc
 def data() -> pd.DataFrame:
+    """ Obtiene los datos del dataset. """
+    
     df = pd.read_csv(app_dir / "dataset.csv", parse_dates=["Fecha"])
     df["Año_Curso"] = pd.Categorical(
             df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True # type: ignore
@@ -36,6 +38,7 @@ def filter_data(
     category: str = "General",
     selected: str = "General",
 ) -> pd.DataFrame | None:
+    """ Filtra los datos según los parámetros seleccionados. """
     df = df[df["Fecha"] >= date] # type: ignore
     if selected == "General":
         return df
@@ -97,6 +100,8 @@ map_objective = {
 
 @reactive.calc
 def get_objectives() -> dict[str, float] | None:
+    """ Obtiene los objetivos calculados a partir de los datos filtrados. """
+    
     df = data().copy()
     start_time = datetime.today() - timedelta(days=2 * 365)
     df = filter_data(df, start_time)
@@ -110,11 +115,13 @@ def get_objectives() -> dict[str, float] | None:
 
 @reactive.calc
 def courses_df() -> list:
+    """ Obtiene los cursos disponibles en el dataset. """
     return data()["Año_Curso"].sort_values(ascending=False).unique().tolist()  # type: ignore
 
 
 @reactive.calc
 def get_filter() -> str:
+    """ Obtiene el filtro seleccionado. """
     return input.filter()
 
 
@@ -122,6 +129,7 @@ trim_df = [1, 2, 3]
 
 
 def last_entry_ds(today: date) -> tuple[int, str]:
+    """ Obtiene el último trimestre y curso disponible en el dataset. """
     today = date.today()
     month, year = today.month, today.year
     match month:
@@ -138,6 +146,7 @@ def last_entry_ds(today: date) -> tuple[int, str]:
 
 
 def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
+    """ Obtiene las opciones disponibles para el filtro seleccionado. """
     base_lst = ["General"]
     if filter not in map_filter_cols.keys():
         raise ValueError("Not a filter")
@@ -148,6 +157,7 @@ def select_choices(df: pd.DataFrame, filter: str) -> list[str]:
 
 
 def course_to_date(trim: int | str, course: str) -> datetime:
+    """ Obtiene la fecha correspondiente a un curso y trimestre. """
     if type(trim) is str:
         trim = int(trim)
     match trim:
@@ -166,6 +176,7 @@ def course_to_date(trim: int | str, course: str) -> datetime:
 
 
 def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) -> float:
+    """ Calcula el objetivo a partir de los datos filtrados. """
     if type(objective) is not str:
         return float(objective)
     amount = float(objective) + 1
@@ -193,10 +204,6 @@ def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) ->
             return prev * amount
         case _:
             raise ValueError("Columna no implementada")
-
-
-def period(trim: int, course: str) -> str:
-    return f"T{trim} {course}"
 
 
 if __name__ == "__main__":
