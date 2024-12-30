@@ -25,29 +25,7 @@ def data() -> pd.DataFrame:
     )
     return df
 
-@reactive.calc
-def filtered_by_date_data() -> pd.DataFrame:
-    df = data().copy()
-    curso_inicio = input.course_start()
-    trim_inicio = int(input.trim_start())
-    date_inicio = course_to_date(trim_inicio, curso_inicio)
-    df = df[df["Fecha"] >= date_inicio]
-    return df
-
-@reactive.calc
-def filtered_data() -> pd.DataFrame:
-    df = pd.read_csv(app_dir / "dataset_v2.csv", parse_dates=["Fecha"])
-    df["Periodo"] = "T" + df["Trimestre"].astype(str) + " " + df["Año_Curso"]
-    df["Año_Curso"] = pd.Categorical(
-        df["Año_Curso"], categories=df["Año_Curso"].unique().sort(), ordered=True
-    )
-    curso_inicio = input.course_start()
-    trim_inicio = int(input.trim_start())
-    date_inicio = course_to_date(trim_inicio, curso_inicio)
-    df = df[df["Fecha"] >= date_inicio]
-    return df
-
-def filter_data(df: pd.DataFrame, date: datetime, category: str, selected: str):
+def filter_data(df: pd.DataFrame, date: datetime, category: str = "General", selected: str = "General"):
     df = df[df["Fecha"] >= date]
     if selected == "General":
         return df
