@@ -16,12 +16,20 @@ def mean_fig(
     if not name:
         name = col_name
 
+    fill_value = objective if normalize else 0
+
     df = (
-        data.groupby(["Año_Curso", "Trimestre"], observed=False)[col_name]
+        data
+        .groupby(["Año_Curso", "Trimestre"], observed=True)[col_name]
         .mean()
         .sort_index()
-        .reset_index()
     )
+    df = df.reindex(
+        pd.MultiIndex.from_product(
+            [df.index.levels[0], df.index.levels[1]], names=["Año_Curso", "Trimestre"]
+        ),
+        fill_value=fill_value,
+    ).reset_index()
     hover_data = {
         "Trimestre": True,
         "Año_Curso": False,
@@ -38,7 +46,7 @@ def mean_fig(
         df,
         x="Año_Curso",
         y=col_name,
-        color=df.Trimestre.astype(str),
+        color="Trimestre",
         barmode=barmode,
         labels={
             col_name: name,
@@ -227,8 +235,9 @@ def comparativa_fig(
         fig = px.bar(df, x=categoria, y=col, title=title)
     fig = FigureWidget(fig)
     fig._config = fig._config | {"displayModeBar": False}
-    fig.add_hline(y=map_objective[col], line_dash = "dash")
+    fig.add_hline(y=map_objective[col], line_dash="dash")
     return fig
+
 
 def fig_bar_acceso(df: pd.DataFrame, categoria: str) -> Figure:
     fig = px.bar(
@@ -254,9 +263,10 @@ def fig_bar_acceso(df: pd.DataFrame, categoria: str) -> Figure:
     )
     return fig
 
-def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure: 
+
+def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure:
     df = (
-        df.groupby([categoria, "Satisfaccion"], observed=False)["ID_Alumno"] 
+        df.groupby([categoria, "Satisfaccion"], observed=False)["ID_Alumno"]
         .count()
         .sort_index()
         .reset_index()
@@ -298,6 +308,7 @@ def fig_bar_satisfaccion(df: pd.DataFrame, categoria: str) -> Figure:
     # 4. Ajustamos el layout si queremos
     fig.update_layout(yaxis_title="Porcentaje", xaxis_title=categoria, showlegend=False)
     return fig
+
 
 def figure_text(texto: str) -> FigureWidget:
     # Creamos un DataFrame mínimo con una sola fila
