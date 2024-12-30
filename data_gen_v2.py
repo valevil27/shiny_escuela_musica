@@ -120,10 +120,8 @@ def generar_alumnos(id_inicial, n_alumnos):
 
 
 if __name__ == "__main__":
-    # Generar nuevos datos para alumnos inscritos en años posteriores
+    # Generar nuevos datos 
     id_inicial = 1
     nuevos_alumnos = 500
     df_alumnos = generar_alumnos(id_inicial, nuevos_alumnos)
-
-    # Guardar el archivo actualizado
-    df_alumnos.to_csv("./dataset_v2.csv", index=False)
+    df_alumnos.to_csv("./dataset.csv", index=False)
