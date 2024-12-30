@@ -97,10 +97,12 @@ map_objective = {
 
 
 @reactive.calc
-def get_objectives():
+def get_objectives() -> dict[str, float] | None:
     df = data().copy()
     start_time = datetime.today() - timedelta(days=2 * 365)
     df = filter_data(df, start_time)
+    if df is None:
+        return None
     objectives = dict()
     for col, obj in map_objective.items():
         objectives[col] = calculate_objective(obj, df, col)
@@ -109,7 +111,7 @@ def get_objectives():
 
 @reactive.calc
 def courses_df() -> list:
-    return data()["Año_Curso"].sort_values(ascending=False).unique().tolist() # type: ignore
+    return data()["Año_Curso"].sort_values(ascending=False).unique().tolist()  # type: ignore
 
 
 @reactive.calc
@@ -179,6 +181,8 @@ def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) ->
 
         case "Avance_Grado_Profesional":
             df = data[data["Curso"] == "Cuarto"]
+            if type(df) is not pd.DataFrame:
+                return 0
             df = df[df["Trimestre"] == 3]
             if len(df) == 0:
                 return 0
@@ -190,8 +194,6 @@ def calculate_objective(objective: str | float, data: pd.DataFrame, col: str) ->
             return prev * amount
         case _:
             raise ValueError("Columna no implementada")
-
-    return amount
 
 
 def period(trim: int, course: str) -> str:
