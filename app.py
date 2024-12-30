@@ -30,6 +30,8 @@ from shared import (
 _ = locale.setlocale(locale.LC_TIME, "")
 actual_trim, actual_course = last_entry_ds(date.today())
 
+ui.page_opts(window_title="Rendimiento Escuela", fillable=True)
+
 
 # Barra de título
 @render.express
@@ -257,7 +259,7 @@ with ui.layout_columns(height=300):
             )
             if df is None:
                 return figure_text("Cargando...")
-            df = df[df["Curso"] == "Cuarto"] # type: ignore
+            df = df[df["Curso"] == "Cuarto"]  # type: ignore
             objective = get_objectives()
             if objective is None or df is None:
                 return figure_text("Cargando...")
