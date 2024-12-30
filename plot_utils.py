@@ -59,7 +59,7 @@ def mean_fig(
     )
 
     fig.update_layout(showlegend=False)
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="auto")
     # Ocultar la barra de herramientas
     fig = FigureWidget(fig)
     fig._config = fig._config | {"displayModeBar": False}
