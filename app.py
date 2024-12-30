@@ -5,17 +5,28 @@ from shiny.express import input, render, ui
 from shinywidgets import render_plotly
 
 from plot_utils import avance_fig, comparativa_fig, mean_fig, satisfaccion_fig
-from shared import courses_df, data, filter_options, type_options, last_entry_ds, select_choices
+from shared import (
+    course_to_date,
+    courses_df,
+    data,
+    filter_options,
+    filter_data,
+    type_options,
+    last_entry_ds,
+    select_choices,
+    logger,
+)
 
 # Idioma local castellano para trabajar con strftime y fechas, _ para no renderizar
 _ = locale.setlocale(locale.LC_TIME, "")
 actual_trim, actual_course = last_entry_ds(date.today())
 
+
 # Barra de título
 @render.express
 def render_title():
     with ui.layout_columns(class_="mt-1 mb-0", col_widths=[8, 4]):
-        title =f"Escuela de Música - {input.category()}" 
+        title = f"Escuela de Música - {input.category()}"
         sel = input.selected()
         if sel != "General":
             title = f"{title}: {input.selected()}"
@@ -50,9 +61,7 @@ with ui.sidebar():
     ui.input_select(
         "trim_start", "Trimestre de Inicio", choices=[1, 2, 3], selected=actual_trim
     )
-    ui.input_select(
-        "category", "Categoría", choices=filter_options, selected="General"
-    )
+    ui.input_select("category", "Categoría", choices=filter_options, selected="General")
 
     @render.ui
     def input_sel_filter():
@@ -63,7 +72,10 @@ with ui.sidebar():
         )
 
     ui.input_select(
-        "tipo", "Tipo de Comparativa", choices=type_options, selected="Tasa de aprobados"
+        "tipo",
+        "Tipo de Comparativa",
+        choices=type_options,
+        selected="Tasa de aprobados",
     )
 
     @render.ui
@@ -87,8 +99,15 @@ with ui.layout_columns(height=300):
         @render_plotly
         def aproved_plotly():
             objective = 0.8
-            fig = mean_fig(
+            df = filter_data(
                 data(),
+                date=course_to_date(input.trim_start(), input.course_start()),
+                category=input.category(),
+                selected=input.selected(),
+            )
+            logger.debug(df)
+            fig = mean_fig(
+                df,
                 objective,
                 "Aprobado",
                 "Promedio de Aprobado",
@@ -188,7 +207,7 @@ with ui.layout_columns(col_widths=[8, 4], height=300):
                 data(),
                 categoria=input.category(),
                 seleccion=input.selected(),
-                tipo_graf=input.tipo()
+                tipo_graf=input.tipo(),
             )
             return fig
 
